@@ -2,10 +2,13 @@
 
 class Pocketwatch {
 
-    public function __construct() {
+    private $variables = [];
+    private $variablesRow = 0;
+
+    public function __construct()
+    {
 
     }
-
 
     public function date_offset()
     {
@@ -27,8 +30,17 @@ class Pocketwatch {
         // Apply the date interval. See https://www.php.net/manual/en/dateinterval.createfromdatestring.php
         $now->add(DateInterval::createFromDateString($dateInterval));
 
-        // Give 'em their output.
-        return ($format) ? $now->format($format) : $now->getTimestamp();
+        // If we have a tag pair, output the innards or no_results content, as appropriate.
+        if (ee()->TMPL->tagdata)
+        {
+            $this->addVariable('date', $now->getTimestamp());
+            return $this->getParsedTagdata();
+        }
+        // Otherwise output true/false.
+        else
+        {
+            return ($format) ? $now->format($format) : $now->getTimestamp();
+        }
     }
 
     public function date_is_today()
@@ -179,6 +191,30 @@ class Pocketwatch {
         {
             return ($now == $then);
         }
+    }
+
+    private function addVariable($name, $value)
+    {
+        $this->variables[$this->variablesRow]['pocketwatch:'.$name] = $value;
+    }
+
+    private function addVariables($variables)
+    {
+        foreach ($variables as $name => $value)
+        {
+            $this->addVariable($name, $value);
+        }
+    }
+
+    private function newVariablesRow()
+    {
+        $this->variablesRow++;
+    }
+
+    private function getParsedTagdata($tagdata = false)
+    {
+        $tagdata = $tagdata ?: ee()->TMPL->tagdata;
+        return ee()->TMPL->parse_variables($tagdata, $this->variables);
     }
 
     private function log($message)
