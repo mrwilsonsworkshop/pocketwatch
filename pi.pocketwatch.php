@@ -59,36 +59,10 @@ class Pocketwatch {
 
     public function date_is_this_week()
     {
-        $now = ee()->localize->format_date("%Y%W");
+        $now = ee()->localize->format_date("%o%W");
         $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        // If $then is false, something went wrong while getting the datetime object.
-        if ($then === false)
-        {
-            return ee()->TMPL->no_results();
-        }
-
-        // Prep our comparison. We use the ISO-8601 definition of week number, which begins on Monday.
-        // ...Unless the user wants the week to start on Sunday. Then we just need to add one day.
-        if (strtolower(ee()->TMPL->fetch_param('week_start_day')) == 'sunday')
-        {
-            $then = $then->add(DateInterval::createFromDateString('1 day'))->format('oW');
-        }
-        else
-        {
-            $then = $then->format('oW');
-        }
-
-        // If we have a tag pair, output the innards or no_results content, as appropriate.
-        if (ee()->TMPL->tagdata)
-        {
-            return ($now == $then) ? ee()->TMPL->tagdata : ee()->TMPL->no_results();
-        }
-        // Otherwise output true/false.
-        else
-        {
-            return ($now == $then);
-        }
+        return $this->isDateThisWeek($now, $then);
     }
 
     public function date_is_last_week()
@@ -98,33 +72,7 @@ class Pocketwatch {
 
         $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        // If $then is false, something went wrong while getting the datetime object.
-        if ($then === false)
-        {
-            return ee()->TMPL->no_results();
-        }
-
-        // Prep our comparison. We use the ISO-8601 definition of week number, which begins on Monday.
-        // ...Unless the user wants the week to start on Sunday. Then we just need to add one day.
-        if (strtolower(ee()->TMPL->fetch_param('week_start_day')) == 'sunday')
-        {
-            $then = $then->add(DateInterval::createFromDateString('1 day'))->format('oW');
-        }
-        else
-        {
-            $then = $then->format('oW');
-        }
-
-        // If we have a tag pair, output the innards or no_results content, as appropriate.
-        if (ee()->TMPL->tagdata)
-        {
-            return ($now == $then) ? ee()->TMPL->tagdata : ee()->TMPL->no_results();
-        }
-        // Otherwise output true/false.
-        else
-        {
-            return ($now == $then);
-        }
+        return $this->isDateThisWeek($now, $then);
     }
 
     public function date_is_next_week()
@@ -134,43 +82,59 @@ class Pocketwatch {
 
         $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        // If $then is false, something went wrong while getting the datetime object.
-        if ($then === false)
-        {
-            return ee()->TMPL->no_results();
-        }
-
-        // Prep our comparison. We use the ISO-8601 definition of week number, which begins on Monday.
-        // ...Unless the user wants the week to start on Sunday. Then we just need to add one day.
-        if (strtolower(ee()->TMPL->fetch_param('week_start_day')) == 'sunday')
-        {
-            $then = $then->add(DateInterval::createFromDateString('1 day'))->format('oW');
-        }
-        else
-        {
-            $then = $then->format('oW');
-        }
-
-        // If we have a tag pair, output the innards or no_results content, as appropriate.
-        if (ee()->TMPL->tagdata)
-        {
-            return ($now == $then) ? ee()->TMPL->tagdata : ee()->TMPL->no_results();
-        }
-        // Otherwise output true/false.
-        else
-        {
-            return ($now == $then);
-        }
+        return $this->isDateThisWeek($now, $then);
     }
 
     public function date_is_this_month()
     {
+        $now = ee()->localize->format_date("%Y%m");
+        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Ym');
 
+        return $this->getDateMatchOutput($now, $then);
+    }
+
+    public function date_is_last_month()
+    {
+        $now = new DateTime();
+        $now = $now->setTimestamp(ee()->localize->now)->sub(DateInterval::createFromDateString('1 month'))->format('Ym');
+        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Ym');
+
+        return $this->getDateMatchOutput($now, $then);
+    }
+
+    public function date_is_next_month()
+    {
+        $now = new DateTime();
+        $now = $now->setTimestamp(ee()->localize->now)->add(DateInterval::createFromDateString('1 month'))->format('Ym');
+        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Ym');
+
+        return $this->getDateMatchOutput($now, $then);
     }
 
     public function date_is_this_year()
     {
+        $now = ee()->localize->format_date("%Y");
+        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Y');
 
+        return $this->getDateMatchOutput($now, $then);
+    }
+
+    public function date_is_last_year()
+    {
+        $now = new DateTime();
+        $now = $now->setTimestamp(ee()->localize->now)->sub(DateInterval::createFromDateString('1 year'))->format('Y');
+        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Y');
+
+        return $this->getDateMatchOutput($now, $then);
+    }
+
+    public function date_is_next_year()
+    {
+        $now = new DateTime();
+        $now = $now->setTimestamp(ee()->localize->now)->add(DateInterval::createFromDateString('1 year'))->format('Y');
+        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Y');
+
+        return $this->getDateMatchOutput($now, $then);
     }
 
     private function getDateTimeFromTagParameters($dateParamName = 'date', $formatParamName = 'format')
@@ -197,6 +161,42 @@ class Pocketwatch {
         }
 
         return $date;
+    }
+
+    private function isDateThisWeek($now, $then)
+    {
+        // If $then is false, something went wrong while getting the datetime object.
+        if ($then === false)
+        {
+            return ee()->TMPL->no_results();
+        }
+
+        // Prep our comparison. We use the ISO-8601 definition of week number, which begins on Monday.
+        // ...Unless the user wants the week to start on Sunday. Then we just need to add one day.
+        if (strtolower(ee()->TMPL->fetch_param('week_start_day')) == 'sunday')
+        {
+            $then = $then->add(DateInterval::createFromDateString('1 day'))->format('oW');
+        }
+        else
+        {
+            $then = $then->format('oW');
+        }
+
+        return $this->getDateMatchOutput($now, $then);
+    }
+
+    private function getDateMatchOutput($now, $then)
+    {
+        // If we have a tag pair, output the innards or no_results content, as appropriate.
+        if (ee()->TMPL->tagdata)
+        {
+            return ($now == $then) ? ee()->TMPL->tagdata : ee()->TMPL->no_results();
+        }
+        // Otherwise output true/false.
+        else
+        {
+            return ($now == $then);
+        }
     }
 
     private function log($message)
