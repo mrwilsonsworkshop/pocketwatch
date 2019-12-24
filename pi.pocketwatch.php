@@ -33,28 +33,10 @@ class Pocketwatch {
 
     public function date_is_today()
     {
+        $now = ee()->localize->format_date("%Y%m%d");
         $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        // If $then is false, something went wrong while getting the datetime object.
-        if ($then === false)
-        {
-            return ee()->TMPL->no_results();
-        }
-
-        // Prep our comparison.
-        $now = ee()->localize->format_date("%Y%m%d");
-        $then = $then->format('Ymd');
-
-        // If we have a tag pair, output the innards or no_results content, as appropriate.
-        if (ee()->TMPL->tagdata)
-        {
-            return ($now == $then) ? ee()->TMPL->tagdata : ee()->TMPL->no_results();
-        }
-        // Otherwise output true/false.
-        else
-        {
-            return ($now == $then);
-        }
+        return ($then === false) ? ee()->TMPL->no_results() : $this->getDateMatchOutput($now, $then->format('Ymd'));
     }
 
     public function date_is_this_week()
@@ -62,7 +44,7 @@ class Pocketwatch {
         $now = ee()->localize->format_date("%o%W");
         $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        return $this->isDateThisWeek($now, $then);
+        return ($then === false) ? ee()->TMPL->no_results() : $this->isDateThisWeek($now, $then);
     }
 
     public function date_is_last_week()
@@ -72,7 +54,7 @@ class Pocketwatch {
 
         $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        return $this->isDateThisWeek($now, $then);
+        return ($then === false) ? ee()->TMPL->no_results() : $this->isDateThisWeek($now, $then);
     }
 
     public function date_is_next_week()
@@ -82,59 +64,59 @@ class Pocketwatch {
 
         $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        return $this->isDateThisWeek($now, $then);
+        return ($then === false) ? ee()->TMPL->no_results() : $this->isDateThisWeek($now, $then);
     }
 
     public function date_is_this_month()
     {
         $now = ee()->localize->format_date("%Y%m");
-        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Ym');
+        $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        return $this->getDateMatchOutput($now, $then);
+        return ($then === false) ? ee()->TMPL->no_results() : $this->getDateMatchOutput($now, $then->format('Ym'));
     }
 
     public function date_is_last_month()
     {
         $now = new DateTime();
         $now = $now->setTimestamp(ee()->localize->now)->sub(DateInterval::createFromDateString('1 month'))->format('Ym');
-        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Ym');
+        $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        return $this->getDateMatchOutput($now, $then);
+        return ($then === false) ? ee()->TMPL->no_results() : $this->getDateMatchOutput($now, $then->format('Ym'));
     }
 
     public function date_is_next_month()
     {
         $now = new DateTime();
         $now = $now->setTimestamp(ee()->localize->now)->add(DateInterval::createFromDateString('1 month'))->format('Ym');
-        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Ym');
+        $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        return $this->getDateMatchOutput($now, $then);
+        return ($then === false) ? ee()->TMPL->no_results() : $this->getDateMatchOutput($now, $then->format('Ym'));
     }
 
     public function date_is_this_year()
     {
         $now = ee()->localize->format_date("%Y");
-        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Y');
+        $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        return $this->getDateMatchOutput($now, $then);
+        return ($then === false) ? ee()->TMPL->no_results() : $this->getDateMatchOutput($now, $then->format('Y'));
     }
 
     public function date_is_last_year()
     {
         $now = new DateTime();
         $now = $now->setTimestamp(ee()->localize->now)->sub(DateInterval::createFromDateString('1 year'))->format('Y');
-        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Y');
+        $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        return $this->getDateMatchOutput($now, $then);
+        return ($then === false) ? ee()->TMPL->no_results() : $this->getDateMatchOutput($now, $then->format('Y'));
     }
 
     public function date_is_next_year()
     {
         $now = new DateTime();
         $now = $now->setTimestamp(ee()->localize->now)->add(DateInterval::createFromDateString('1 year'))->format('Y');
-        $then = $this->getDateTimeFromTagParameters('date', 'format')->format('Y');
+        $then = $this->getDateTimeFromTagParameters('date', 'format');
 
-        return $this->getDateMatchOutput($now, $then);
+        return ($then === false) ? ee()->TMPL->no_results() : $this->getDateMatchOutput($now, $then->format('Y'));
     }
 
     private function getDateTimeFromTagParameters($dateParamName = 'date', $formatParamName = 'format')
